@@ -1,0 +1,29 @@
+# Basic-auth gateway in front of Redpanda Console.
+# Console's own login is an enterprise feature, so the Console service stays on the
+# private network and this gateway is its only public entry point.
+{
+	admin off
+	persist_config off
+	auto_https off
+	servers {
+		# Railway's edge terminates TLS and forwards X-Forwarded-* headers.
+		trusted_proxies static private_ranges 100.0.0.0/8
+	}
+}
+
+:{$PORT:8080} {
+	# Unauthenticated liveness endpoint for the Railway healthcheck.
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	handle {
+		basic_auth {
+			{$BASIC_AUTH_USERNAME} {$BASIC_AUTH_HASH}
+		}
+		reverse_proxy {$CONSOLE_UPSTREAM} {
+			# Console streams topic messages; pass chunks through immediately.
+			flush_interval -1
+		}
+	}
+}

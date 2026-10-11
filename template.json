@@ -1,0 +1,256 @@
+{
+  "name": "Redpanda v26 Kafka-Compatible Streaming",
+  "description": "Kafka API streaming with Redpanda Console. No ZooKeeper, no JVM.",
+  "category": "Queues",
+  "tags": [
+    "redpanda",
+    "kafka",
+    "streaming",
+    "event-streaming",
+    "message-queue",
+    "schema-registry",
+    "console"
+  ],
+  "image": "https://cdn.jsdelivr.net/gh/redpanda-data/console@master/frontend/public/favicon.svg",
+  "upstream": {
+    "repo": "redpanda-data/redpanda",
+    "version": "v26.2.4",
+    "checked": "2026-10-11"
+  },
+  "services": {
+    "redpanda": {
+      "icon": "https://cdn.jsdelivr.net/gh/redpanda-data/console@master/frontend/public/favicon.svg",
+      "source": {
+        "repo": "baranberkay96/redpanda-railway",
+        "rootDirectory": "/services/redpanda"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/v1/status/ready",
+      "healthcheckTimeout": 300,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/var/lib/redpanda/data"
+      },
+      "variables": {
+        "PORT": {
+          "defaultValue": "9644",
+          "description": "Admin API port; /v1/status/ready (unauthenticated) is the healthcheck.",
+          "required": false
+        },
+        "KAFKA_SASL_USERNAME": {
+          "defaultValue": "admin",
+          "description": "SASL/SCRAM superuser created on first start (also Schema Registry / HTTP Proxy / Admin API login).",
+          "required": false
+        },
+        "KAFKA_SASL_PASSWORD": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Password of the superuser. Used only when the cluster is created; change it later with rpk (see README).",
+          "required": false
+        },
+        "KAFKA_SASL_MECHANISM": {
+          "defaultValue": "SCRAM-SHA-256",
+          "description": "SCRAM-SHA-256 or SCRAM-SHA-512.",
+          "required": false
+        },
+        "KAFKA_BOOTSTRAP_SERVERS": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}:9092",
+          "description": "Bootstrap address for clients on the private network; reference it as ${{redpanda.KAFKA_BOOTSTRAP_SERVERS}}.",
+          "required": false
+        },
+        "SCHEMA_REGISTRY_URL": {
+          "defaultValue": "http://${{RAILWAY_PRIVATE_DOMAIN}}:8081",
+          "description": "Schema Registry URL on the private network (HTTP Basic auth with the SASL user).",
+          "required": false
+        },
+        "REDPANDA_SMP": {
+          "defaultValue": "1",
+          "description": "CPU cores Redpanda uses (seastar shards).",
+          "required": false
+        },
+        "REDPANDA_MEMORY": {
+          "defaultValue": "1G",
+          "description": "Memory Redpanda reserves for itself. Size it to your throughput; the container needs a little more than this.",
+          "required": false
+        },
+        "KAFKA_AUTO_CREATE_TOPICS": {
+          "defaultValue": "false",
+          "description": "Create topics automatically on first produce. Applied when the cluster is created.",
+          "required": false
+        },
+        "KAFKA_LOG_RETENTION_MS": {
+          "defaultValue": "604800000",
+          "description": "Default topic retention (7 days). Applied when the cluster is created; per-topic retention can be set any time.",
+          "required": false
+        },
+        "REDPANDA_LOG_LEVEL": {
+          "defaultValue": "info",
+          "description": "Broker log level.",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Let Redpanda flush and stop cleanly on redeploy.",
+          "required": false
+        }
+      }
+    },
+    "console": {
+      "icon": "https://cdn.jsdelivr.net/gh/redpanda-data/console@master/frontend/public/favicon.svg",
+      "source": {
+        "image": "redpandadata/console:v3.12.0"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/admin/health",
+      "healthcheckTimeout": 600,
+      "restartPolicyType": "ALWAYS",
+      "restartPolicyMaxRetries": null,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "PORT": {
+          "defaultValue": "8080",
+          "description": "Console HTTP port; /admin/health is the healthcheck.",
+          "required": false
+        },
+        "SERVER_LISTENPORT": {
+          "defaultValue": "8080",
+          "description": "Console HTTP port.",
+          "required": false
+        },
+        "KAFKA_BROKERS": {
+          "defaultValue": "${{redpanda.KAFKA_BOOTSTRAP_SERVERS}}",
+          "description": "Kafka bootstrap server (private network).",
+          "required": false
+        },
+        "KAFKA_SASL_ENABLED": {
+          "defaultValue": "true",
+          "description": "Authenticate to Kafka with SASL.",
+          "required": false
+        },
+        "KAFKA_SASL_MECHANISM": {
+          "defaultValue": "${{redpanda.KAFKA_SASL_MECHANISM}}",
+          "description": "SCRAM mechanism (reference).",
+          "required": false
+        },
+        "KAFKA_SASL_USERNAME": {
+          "defaultValue": "${{redpanda.KAFKA_SASL_USERNAME}}",
+          "description": "SASL user (reference).",
+          "required": false
+        },
+        "KAFKA_SASL_PASSWORD": {
+          "defaultValue": "${{redpanda.KAFKA_SASL_PASSWORD}}",
+          "description": "SASL password (reference).",
+          "required": false
+        },
+        "KAFKA_SASL_IMPERSONATEUSER": {
+          "defaultValue": "false",
+          "description": "Use the static credentials above (no Console login).",
+          "required": false
+        },
+        "SCHEMAREGISTRY_ENABLED": {
+          "defaultValue": "true",
+          "description": "Show schemas and decode Avro/Protobuf messages.",
+          "required": false
+        },
+        "SCHEMAREGISTRY_URLS": {
+          "defaultValue": "${{redpanda.SCHEMA_REGISTRY_URL}}",
+          "description": "Schema Registry URL (reference).",
+          "required": false
+        },
+        "SCHEMAREGISTRY_AUTHENTICATION_BASIC_USERNAME": {
+          "defaultValue": "${{redpanda.KAFKA_SASL_USERNAME}}",
+          "description": "Schema Registry user (reference).",
+          "required": false
+        },
+        "SCHEMAREGISTRY_AUTHENTICATION_BASIC_PASSWORD": {
+          "defaultValue": "${{redpanda.KAFKA_SASL_PASSWORD}}",
+          "description": "Schema Registry password (reference).",
+          "required": false
+        },
+        "SCHEMAREGISTRY_AUTHENTICATION_IMPERSONATEUSER": {
+          "defaultValue": "false",
+          "description": "Use the static credentials above.",
+          "required": false
+        },
+        "REDPANDA_ADMINAPI_ENABLED": {
+          "defaultValue": "true",
+          "description": "Manage users, ACLs and cluster settings through the Admin API.",
+          "required": false
+        },
+        "REDPANDA_ADMINAPI_URLS": {
+          "defaultValue": "http://${{redpanda.RAILWAY_PRIVATE_DOMAIN}}:9644",
+          "description": "Admin API URL (private network).",
+          "required": false
+        },
+        "REDPANDA_ADMINAPI_AUTHENTICATION_BASIC_USERNAME": {
+          "defaultValue": "${{redpanda.KAFKA_SASL_USERNAME}}",
+          "description": "Admin API user (reference).",
+          "required": false
+        },
+        "REDPANDA_ADMINAPI_AUTHENTICATION_BASIC_PASSWORD": {
+          "defaultValue": "${{redpanda.KAFKA_SASL_PASSWORD}}",
+          "description": "Admin API password (reference).",
+          "required": false
+        },
+        "REDPANDA_ADMINAPI_AUTHENTICATION_IMPERSONATEUSER": {
+          "defaultValue": "false",
+          "description": "Use the static credentials above.",
+          "required": false
+        }
+      }
+    },
+    "console-gateway": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/caddy.svg",
+      "source": {
+        "repo": "baranberkay96/redpanda-railway",
+        "rootDirectory": "/services/console-gateway"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/healthz",
+      "healthcheckTimeout": 120,
+      "restartPolicyType": "ALWAYS",
+      "restartPolicyMaxRetries": null,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 8080,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "PORT": {
+          "defaultValue": "8080",
+          "description": "Gateway port (public domain target); /healthz is unauthenticated.",
+          "required": false
+        },
+        "BASIC_AUTH_USERNAME": {
+          "defaultValue": "admin",
+          "description": "Login for Redpanda Console.",
+          "required": false
+        },
+        "BASIC_AUTH_PASSWORD": {
+          "defaultValue": "${{secret(24, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Password for Redpanda Console. Generated; read it here.",
+          "required": false
+        },
+        "CONSOLE_UPSTREAM": {
+          "defaultValue": "${{console.RAILWAY_PRIVATE_DOMAIN}}:8080",
+          "description": "Console on the private network.",
+          "required": false
+        }
+      }
+    }
+  }
+}
