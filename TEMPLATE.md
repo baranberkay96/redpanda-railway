@@ -183,3 +183,7 @@ Railway prices: RAM $10/GB-month, vCPU $20/vCPU-month, volume $0.15/GB-month.
 - **No TLS on the public listener.** SCRAM never sends the password in clear, but message data over a TCP proxy is unencrypted. Keep sensitive traffic on the private network or terminate TLS yourself.
 - **Changing the superuser password** after the first start: `rpk security user update admin --new-password {new} --mechanism SCRAM-SHA-256` (with the old credentials), then update `KAFKA_SASL_PASSWORD` so Console and the gateway keep working. Bootstrap-only settings (`KAFKA_AUTO_CREATE_TOPICS`, `KAFKA_LOG_RETENTION_MS`) are changed later with `rpk cluster config set`.
 - **License:** Redpanda and Console are under the Business Source License 1.1, which allows self-hosting for your own use but not offering Redpanda as a "Streaming or Queuing Service" to third parties (the grant explicitly mentions hosting providers). Each user deploys the template into their own account for their own applications; whether a marketplace template with usage kickbacks is affected should be confirmed with counsel or Redpanda.
+
+## Deploy test findings (2026-10-12)
+
+Found while testing PostHog's Redpanda: listeners bound to `0.0.0.0` accept IPv4 only, and clients that try the private domain's IPv6 address first (e.g. librdkafka-based ones) get "Connection refused". All listeners (Kafka internal/external, Admin API, HTTP Proxy, Schema Registry) now bind `"::"` (dual-stack). Verified locally: SASL clients connect over 127.0.0.1 and [::1]; unauthenticated and wrong-password clients are rejected.

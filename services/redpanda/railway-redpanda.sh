@@ -45,18 +45,18 @@ redpanda:
   empty_seed_starts_cluster: true
   seed_servers: []
   rpc_server:
-    address: 0.0.0.0
+    address: "::"
     port: 33145
   advertised_rpc_api:
     address: 127.0.0.1
     port: 33145
   kafka_api:
     - name: internal
-      address: 0.0.0.0
+      address: "::"
       port: 9092
       authentication_method: sasl
     - name: external
-      address: 0.0.0.0
+      address: "::"
       port: 9093
       authentication_method: sasl
   advertised_kafka_api:
@@ -67,16 +67,16 @@ redpanda:
       address: ${EXTERNAL_HOST}
       port: ${EXTERNAL_PORT}
   admin:
-    - address: 0.0.0.0
+    - address: "::"
       port: 9644
 pandaproxy:
   pandaproxy_api:
-    - address: 0.0.0.0
+    - address: "::"
       port: 8082
       authentication_method: http_basic
 schema_registry:
   schema_registry_api:
-    - address: 0.0.0.0
+    - address: "::"
       port: 8081
       authentication_method: http_basic
 rpk:
